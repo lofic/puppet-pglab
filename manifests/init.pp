@@ -4,16 +4,16 @@
 
 class pglab (
     String $pgversion,
-    String $monitoringu    = 'monitor',
     String $monitoringp,
+    String $monitoringu    = 'monitor',
     String $monitoringip   = '127.0.0.1',
     String $monitoringport = '5432',
 
-    String $replicationu   = 'replication',
     String $replicationp,
+    String $replicationu   = 'replication',
 
-    String $pgpoolu        = 'pgpool',
     String $pgpoolp,
+    String $pgpoolu        = 'pgpool',
 
     String $pgbase         = '/pg',
     String $archivedir     = 'archives',

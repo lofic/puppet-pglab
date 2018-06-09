@@ -6,17 +6,19 @@ class pglab::server {
     $pgsuffix = regsubst($pgver,'\.','')
     $pgbase   = $pglab::pgbase
 
-    File {
+    $filedefaults = {
         ensure => present,
         owner  => 'postgres',
         group  => 'postgres',
         mode   => '0755'
     }
 
-    file { $pgbase :
-        ensure => directory,
-        owner  => 'root',
-        group  => 'root',
+    file {
+        default: * => $filedefaults;
+        $pgbase :
+            ensure => directory,
+            owner  => 'root',
+            group  => 'root',;
     }
 
     if  $::osfamily == 'RedHat' {
@@ -100,11 +102,13 @@ class pglab::server {
     }
 
     # Password file for automatic backup and replication
-    file { '/var/lib/pgsql/.pgpass' :
-        mode      => '0600',
-        show_diff => false,
-        content   => template('pglab/pgpass'),
-        require   => Class['postgresql::server'],
+    file {
+        default: * => $filedefaults;
+        '/var/lib/pgsql/.pgpass' :
+            mode      => '0600',
+            show_diff => false,
+            content   => template('pglab/pgpass'),
+            require   => Class['postgresql::server'],;
     }
 
     # pgpool user
@@ -137,25 +141,26 @@ class pglab::server {
     $sbypath  = "${pgbase}/${pglab::standbydir}"
 
 
-    # Archive folder
-    file { $archpath :
-        ensure  => directory,
-        mode    => '0750',
-        require => [ Class['postgresql::server'], File[$pgbase] ],
-    }
+    file {
+        default: * => $filedefaults;
 
-    # Backup folder
-    file { $bkppath :
-        ensure  => directory,
-        mode    => '0750',
-        require => [ Class['postgresql::server'], File[$pgbase] ],
-    }
+        # Archive folder
+        $archpath :
+            ensure  => directory,
+            mode    => '0750',
+            require => [ Class['postgresql::server'], File[$pgbase] ],;
 
-    # Hot standby folder (not used on the primary active server)
-    file { $sbypath :
-        ensure  => directory,
-        mode    => '0700',
-        require => [ Class['postgresql::server'], File[$pgbase] ],
+        # Backup folder
+        $bkppath :
+            ensure  => directory,
+            mode    => '0750',
+            require => [ Class['postgresql::server'], File[$pgbase] ],;
+
+        # Hot standby folder (not used on the primary active server)
+        $sbypath :
+            ensure  => directory,
+            mode    => '0700',
+            require => [ Class['postgresql::server'], File[$pgbase] ],;
     }
 
     # Configuration for archiving, hot backup and hot standby
@@ -174,17 +179,19 @@ class pglab::server {
     }
 
     # Shell profile
-    file { 'psql.sh' :
-        path    => '/etc/profile.d/psql.sh',
-        content => template('pglab/psql.sh'),
-        owner   => 'root',
-        group   => 'root',
-    }
+    file {
+        default: * => $filedefaults;
 
-    file { '/var/lib/pgsql/.bash_profile' :
-        mode    => '0644',
-        content => template('pglab/bash_profile'),
-        require => Class['postgresql::server'],
+        'psql.sh':
+            path    => '/etc/profile.d/psql.sh',
+            content => template('pglab/psql.sh'),
+            owner   => 'root',
+            group   => 'root',;
+
+        '/var/lib/pgsql/.bash_profile' :
+            mode    => '0644',
+            content => template('pglab/bash_profile'),
+            require => Class['postgresql::server'],;
     }
 
     if ($pglab::setfwrules == true) { include pglab::firewall }
